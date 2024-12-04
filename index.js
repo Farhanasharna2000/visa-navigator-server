@@ -12,7 +12,8 @@ app.use(cors())
 
 
 
-const uri = "mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.zlou2.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
+
+const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.zlou2.mongodb.net/visa-navigator?retryWrites=true&w=majority&appName=Cluster0`;
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
 const client = new MongoClient(uri, {
@@ -30,6 +31,19 @@ async function run() {
     // Send a ping to confirm a successful connection
     // await client.db("admin").command({ ping: 1 });
     // console.log("Pinged your deployment. You successfully connected to MongoDB!");
+
+    const visaCollection = client.db("visa-navigator").collection("visaData")
+    console.log(visaCollection);
+    
+
+    app.post('/visaData', async (req, res) => {
+
+        const data = req.body;
+        console.log(data);
+        
+        const result = await visaCollection.insertOne(data)
+        res.send(result)
+      })
 
   } finally {
     // Ensures that the client will close when you finish/error
