@@ -127,6 +127,44 @@ async function run() {
         res.send(result)
        
       })
+
+      // app.get('/update/:id',async(req,res)=>{
+      //   const id = req.params.id;
+      //   const query={_id:new ObjectId(id)}
+      //   const result = await visaCollection.findOne(query)
+      //   res.send(result)
+       
+      // })
+
+      app.patch('/update/:id', async (req, res) => {
+        const id = req.params.id;
+        const data = req.body;
+    
+        if (!ObjectId.isValid(id)) {
+            return res.status(400).send({ message: 'Invalid ID format' });
+        }
+    
+        const query = { _id: new ObjectId(id) };
+        const update = {
+            $set: {
+                name: data?.name,
+                visaType: data?.visaType,
+                processingTime: data?.processingTime,
+                fee: data?.fee,
+                validity: data?.validity,
+                method: data?.method,
+                image: data?.image,
+            }
+        };
+    
+        try {
+            const result = await visaCollection.updateOne(query, update);
+            res.send(result);
+        } catch (error) {
+            console.error('Error updating visa:', error);
+            res.status(500).send({ message: 'Failed to update visa' });
+        }
+    });
       
   } finally {
     // Ensures that the client will close when you finish/error
