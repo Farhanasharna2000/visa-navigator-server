@@ -98,6 +98,29 @@ async function run() {
         res.send(result)
        
       })
+
+      app.get('/myAddedVisas', async (req, res) => {
+        try {
+          
+          const email = req.headers.authorization?.split(' ')[1];
+          
+          if (!email) {
+            return res.status(400).send({ message: 'Email not provided' });
+          }
+      
+          const result = await visaCollection.find({authUserEmail: email }).toArray();
+          
+          if (!result || result.length === 0) {
+            return res.status(404).send({ message: 'No visa data found for this user' });
+          }
+      
+          res.send(result);
+        } catch (error) {
+          res.status(500).send({ message: 'Server error', error });
+        }
+      });
+      
+      
   } finally {
     // Ensures that the client will close when you finish/error
     // await client.close();
