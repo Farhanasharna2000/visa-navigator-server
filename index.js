@@ -46,7 +46,7 @@ async function run() {
       })
 
       app.get('/visaData',async(req,res)=>{
-        const result = await visaCollection.find().toArray()
+        const result = await visaCollection.find().sort({ _id: -1 }).toArray()
         res.send(result)
       })
       app.get('/visaData/:id',async(req,res)=>{
@@ -56,6 +56,14 @@ async function run() {
         res.send(result)
        
       })
+      app.get('/visaDataSort', async (req, res) => {
+        try {
+          const result = await visaCollection.find().sort({ _id: -1 }).limit(6).toArray(); 
+          res.send(result);
+        } catch (error) {
+          res.status(500).send({ error: 'Failed to fetch data' });
+        }
+      });
 
   } finally {
     // Ensures that the client will close when you finish/error
