@@ -33,6 +33,8 @@ async function run() {
     // console.log("Pinged your deployment. You successfully connected to MongoDB!");
 
     const visaCollection = client.db("visa-navigator").collection("visaData")
+    const applicationCollection = client.db("visa-navigator").collection("application")
+
     console.log(visaCollection);
     
 
@@ -57,13 +59,18 @@ async function run() {
        
       })
       app.get('/visaDataSort', async (req, res) => {
-        try {
           const result = await visaCollection.find().sort({ _id: -1 }).limit(6).toArray(); 
           res.send(result);
-        } catch (error) {
-          res.status(500).send({ error: 'Failed to fetch data' });
-        }
+       
       });
+      app.post('/visaApplications', async (req, res) => {
+
+        const data = req.body;
+        console.log(data);
+        
+        const result = await applicationCollection.insertOne(data)
+        res.send(result)
+      })
 
   } finally {
     // Ensures that the client will close when you finish/error
