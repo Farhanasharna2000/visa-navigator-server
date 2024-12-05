@@ -90,6 +90,14 @@ async function run() {
           res.status(500).send({ message: 'Server error', error });
         }
       });
+
+      app.delete('/myVisaApplications/:id',async(req,res)=>{
+        const id = req.params.id;
+        const query={_id:new ObjectId(id)}
+        const result = await applicationCollection.deleteOne(query)
+        res.send(result)
+       
+      })
   } finally {
     // Ensures that the client will close when you finish/error
     // await client.close();
