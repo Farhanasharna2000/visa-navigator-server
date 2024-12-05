@@ -41,7 +41,6 @@ async function run() {
     app.post('/visaData', async (req, res) => {
 
         const data = req.body;
-        console.log(data);
         
         const result = await visaCollection.insertOne(data)
         res.send(result)
@@ -66,12 +65,31 @@ async function run() {
       app.post('/visaApplications', async (req, res) => {
 
         const data = req.body;
-        console.log(data);
         
         const result = await applicationCollection.insertOne(data)
         res.send(result)
       })
+      app.get('/visaApplications',async(req,res)=>{
+        const result = await applicationCollection.find().sort({ _id: -1 }).toArray()
+        res.send(result)
+      })
 
+      app.get('/myVisaApplications', async (req, res) => {
+        try {
+          const email = req.headers.authorization?.split(' ')[1];
+      
+          if (!email) {
+            return res.status(400).send({ message: 'Email not provided' });
+          }
+      
+          const query = { email: email };
+          const result = await applicationCollection.find(query).toArray();
+          
+          res.send(result);
+        } catch (error) {
+          res.status(500).send({ message: 'Server error', error });
+        }
+      });
   } finally {
     // Ensures that the client will close when you finish/error
     // await client.close();
