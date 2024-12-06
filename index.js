@@ -46,7 +46,7 @@ async function run() {
         res.send(result)
       })
 
-      app.get('/visaData',async(req,res)=>{
+      app.get('/visaData',async(req,res)=>{    
         const result = await visaCollection.find().sort({ _id: -1 }).toArray()
         res.send(result)
       })
@@ -70,26 +70,36 @@ async function run() {
         res.send(result)
       })
       app.get('/visaApplications',async(req,res)=>{
+
         const result = await applicationCollection.find().sort({ _id: -1 }).toArray()
         res.send(result)
       })
 
       app.get('/myVisaApplications', async (req, res) => {
+        
+        const { searchParams } = req.query;
+        let option = {};
+        if (searchParams) {
+          option = { country: { $regex: searchParams, $options: "i" } };
+        }
+      
         try {
           const email = req.headers.authorization?.split(' ')[1];
-      
           if (!email) {
             return res.status(400).send({ message: 'Email not provided' });
           }
       
-          const query = { email: email };
+          const query = {
+            email: email,
+            ...option,
+          };
           const result = await applicationCollection.find(query).toArray();
-          
           res.send(result);
         } catch (error) {
           res.status(500).send({ message: 'Server error', error });
         }
       });
+      
 
       app.delete('/myVisaApplications/:id',async(req,res)=>{
         const id = req.params.id;
@@ -111,7 +121,7 @@ async function run() {
           const result = await visaCollection.find({authUserEmail: email }).toArray();
           
           if (!result || result.length === 0) {
-            return res.status(404).send({ message: 'No visa data found for this user' });
+            return res.status(404).send({ message: 'No visa data found' });
           }
       
           res.send(result);
@@ -128,13 +138,7 @@ async function run() {
        
       })
 
-      // app.get('/update/:id',async(req,res)=>{
-      //   const id = req.params.id;
-      //   const query={_id:new ObjectId(id)}
-      //   const result = await visaCollection.findOne(query)
-      //   res.send(result)
-       
-      // })
+    
 
       app.patch('/update/:id', async (req, res) => {
         const id = req.params.id;
