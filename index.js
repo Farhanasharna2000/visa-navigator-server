@@ -35,7 +35,6 @@ async function run() {
     const visaCollection = client.db("visa-navigator").collection("visaData")
     const applicationCollection = client.db("visa-navigator").collection("application")
 
-    console.log(visaCollection);
     
 
     app.post('/visaData', async (req, res) => {
@@ -76,7 +75,7 @@ async function run() {
       })
 
       app.get('/myVisaApplications', async (req, res) => {
-        
+
         const { searchParams } = req.query;
         let option = {};
         if (searchParams) {
@@ -169,7 +168,18 @@ async function run() {
             res.status(500).send({ message: 'Failed to update visa' });
         }
     });
-      
+     
+app.get('/selectedVisa', async (req, res) => {
+  const visaType = req.query.visaType;
+  
+  try {
+    const result = await visaCollection.find({ visaType: visaType }).toArray();
+    res.json(result);
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching visas' });
+  }
+});
+
   } finally {
     // Ensures that the client will close when you finish/error
     // await client.close();
