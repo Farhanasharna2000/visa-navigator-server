@@ -35,151 +35,151 @@ async function run() {
     const visaCollection = client.db("visa-navigator").collection("visaData")
     const applicationCollection = client.db("visa-navigator").collection("application")
 
-    
+
 
     app.post('/visaData', async (req, res) => {
 
-        const data = req.body;
-        
-        const result = await visaCollection.insertOne(data)
-        res.send(result)
-      })
+      const data = req.body;
 
-      app.get('/visaData',async(req,res)=>{    
-        const result = await visaCollection.find().sort({ _id: -1 }).toArray()
-        res.send(result)
-      })
-      app.get('/visaData/:id',async(req,res)=>{
-        const id = req.params.id;
-        const query={_id:new ObjectId(id)}
-        const result = await visaCollection.findOne(query)
-        res.send(result)
-       
-      })
-      app.get('/visaDataSort', async (req, res) => {
-          const result = await visaCollection.find().sort({ _id: -1 }).limit(6).toArray(); 
-          res.send(result);
-       
-      });
-      app.post('/visaApplications', async (req, res) => {
+      const result = await visaCollection.insertOne(data)
+      res.send(result)
+    })
 
-        const data = req.body;
-        
-        const result = await applicationCollection.insertOne(data)
-        res.send(result)
-      })
-      app.get('/visaApplications',async(req,res)=>{
+    app.get('/visaData', async (req, res) => {
+      const result = await visaCollection.find().sort({ _id: -1 }).toArray()
+      res.send(result)
+    })
+    app.get('/visaData/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) }
+      const result = await visaCollection.findOne(query)
+      res.send(result)
 
-        const result = await applicationCollection.find().sort({ _id: -1 }).toArray()
-        res.send(result)
-      })
-      app.get('/myVisaApplications', async (req, res) => {
-        const { searchParams } = req.query;
-        let option = {};
-        if (searchParams) {
-            option = { country: { $regex: searchParams, $options: "i" } };
-        }
-    
-        try {
-            const email = req.headers.authorization?.split(' ')[1];
-            if (!email) {
-                return res.status(400).send({ message: 'Email not provided' });
-            }
-    
-            const query = {
-                email: email,
-                ...option,
-            };
-    
-            const result = await applicationCollection.find(query).sort({ _id: -1 }).toArray();
-    
-            res.send(result);
-        } catch (error) {
-            res.status(500).send({ message: 'Server error', error });
-        }
+    })
+    app.get('/visaDataSort', async (req, res) => {
+      const result = await visaCollection.find().sort({ _id: -1 }).limit(6).toArray();
+      res.send(result);
+
     });
-    
-    
+    app.post('/visaApplications', async (req, res) => {
 
-      app.delete('/myVisaApplications/:id',async(req,res)=>{
-        const id = req.params.id;
-        const query={_id:new ObjectId(id)}
-        const result = await applicationCollection.deleteOne(query)
-        res.send(result)
-       
-      })
+      const data = req.body;
 
-      app.get('/myAddedVisas', async (req, res) => {
-        try {
-          
-          const email = req.headers.authorization?.split(' ')[1];
-          
-          if (!email) {
-            return res.status(400).send({ message: 'Email not provided' });
-          }
-      
-          const result = await visaCollection.find({authUserEmail: email }).sort({ _id: -1 }).toArray();
-          
-          if (!result || result.length === 0) {
-            return res.status(404).send({ message: 'No visa data found' });
-          }
-      
-          res.send(result);
-        } catch (error) {
-          res.status(500).send({ message: 'Server error', error });
+      const result = await applicationCollection.insertOne(data)
+      res.send(result)
+    })
+    app.get('/visaApplications', async (req, res) => {
+
+      const result = await applicationCollection.find().sort({ _id: -1 }).toArray()
+      res.send(result)
+    })
+    app.get('/myVisaApplications', async (req, res) => {
+      const { searchParams } = req.query;
+      let option = {};
+      if (searchParams) {
+        option = { country: { $regex: searchParams, $options: "i" } };
+      }
+
+      try {
+        const email = req.headers.authorization?.split(' ')[1];
+        if (!email) {
+          return res.status(400).send({ message: 'Email not provided' });
         }
-      });
-      
-      app.delete('/myAddedVisas/:id',async(req,res)=>{
-        const id = req.params.id;
-        const query={_id:new ObjectId(id)}
-        const result = await visaCollection.deleteOne(query)
-        res.send(result)
-       
-      })
 
-    
-
-      app.patch('/update/:id', async (req, res) => {
-        const id = req.params.id;
-        const data = req.body;
-    
-        if (!ObjectId.isValid(id)) {
-            return res.status(400).send({ message: 'Invalid ID format' });
-        }
-    
-        const query = { _id: new ObjectId(id) };
-        const update = {
-            $set: {
-                name: data?.name,
-                visaType: data?.visaType,
-                processingTime: data?.processingTime,
-                fee: data?.fee,
-                validity: data?.validity,
-                method: data?.method,
-                image: data?.image,
-            }
+        const query = {
+          email: email,
+          ...option,
         };
-    
-        try {
-            const result = await visaCollection.updateOne(query, update);
-            res.send(result);
-        } catch (error) {
-            console.error('Error updating visa:', error);
-            res.status(500).send({ message: 'Failed to update visa' });
-        }
+
+        const result = await applicationCollection.find(query).sort({ _id: -1 }).toArray();
+
+        res.send(result);
+      } catch (error) {
+        res.status(500).send({ message: 'Server error', error });
+      }
     });
-     
-app.get('/selectedVisa', async (req, res) => {
-  const visaType = req.query.visaType;
-  
-  try {
-    const result = await visaCollection.find({ visaType: visaType }).toArray();
-    res.json(result);
-  } catch (error) {
-    res.status(500).json({ message: 'Error fetching visas' });
-  }
-});
+
+
+
+    app.delete('/myVisaApplications/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) }
+      const result = await applicationCollection.deleteOne(query)
+      res.send(result)
+
+    })
+
+    app.get('/myAddedVisas', async (req, res) => {
+      try {
+
+        const email = req.headers.authorization?.split(' ')[1];
+
+        if (!email) {
+          return res.status(400).send({ message: 'Email not provided' });
+        }
+
+        const result = await visaCollection.find({ authUserEmail: email }).sort({ _id: -1 }).toArray();
+
+        if (!result || result.length === 0) {
+          return res.status(404).send({ message: 'No visa data found' });
+        }
+
+        res.send(result);
+      } catch (error) {
+        res.status(500).send({ message: 'Server error', error });
+      }
+    });
+
+    app.delete('/myAddedVisas/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) }
+      const result = await visaCollection.deleteOne(query)
+      res.send(result)
+
+    })
+
+
+
+    app.patch('/update/:id', async (req, res) => {
+      const id = req.params.id;
+      const data = req.body;
+
+      if (!ObjectId.isValid(id)) {
+        return res.status(400).send({ message: 'Invalid ID format' });
+      }
+
+      const query = { _id: new ObjectId(id) };
+      const update = {
+        $set: {
+          name: data?.name,
+          visaType: data?.visaType,
+          processingTime: data?.processingTime,
+          fee: data?.fee,
+          validity: data?.validity,
+          method: data?.method,
+          image: data?.image,
+        }
+      };
+
+      try {
+        const result = await visaCollection.updateOne(query, update);
+        res.send(result);
+      } catch (error) {
+        console.error('Error updating visa:', error);
+        res.status(500).send({ message: 'Failed to update visa' });
+      }
+    });
+
+    app.get('/selectedVisa', async (req, res) => {
+      const visaType = req.query.visaType;
+
+      try {
+        const result = await visaCollection.find({ visaType: visaType }).toArray();
+        res.json(result);
+      } catch (error) {
+        res.status(500).json({ message: 'Error fetching visas' });
+      }
+    });
 
   } finally {
     // Ensures that the client will close when you finish/error
@@ -188,11 +188,11 @@ app.get('/selectedVisa', async (req, res) => {
 }
 run().catch(console.dir);
 
-app.get("/",(req,res)=>{
-    res.send('Server is running')
+app.get("/", (req, res) => {
+  res.send('Server is running')
 })
 
-app.listen(port,()=>{
-    console.log(`Server is running on port : ${port}`);
-    
+app.listen(port, () => {
+  console.log(`Server is running on port : ${port}`);
+
 })
