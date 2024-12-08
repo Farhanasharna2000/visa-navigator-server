@@ -73,32 +73,33 @@ async function run() {
         const result = await applicationCollection.find().sort({ _id: -1 }).toArray()
         res.send(result)
       })
-
       app.get('/myVisaApplications', async (req, res) => {
-
         const { searchParams } = req.query;
         let option = {};
         if (searchParams) {
-          option = { country: { $regex: searchParams, $options: "i" } };
+            option = { country: { $regex: searchParams, $options: "i" } };
         }
-      
+    
         try {
-          const email = req.headers.authorization?.split(' ')[1];
-          if (!email) {
-            return res.status(400).send({ message: 'Email not provided' });
-          }
-      
-          const query = {
-            email: email,
-            ...option,
-          };
-          const result = await applicationCollection.find(query).toArray();
-          res.send(result);
+            const email = req.headers.authorization?.split(' ')[1];
+            if (!email) {
+                return res.status(400).send({ message: 'Email not provided' });
+            }
+    
+            const query = {
+                email: email,
+                ...option,
+            };
+    
+            const result = await applicationCollection.find(query).sort({ _id: -1 }).toArray();
+    
+            res.send(result);
         } catch (error) {
-          res.status(500).send({ message: 'Server error', error });
+            res.status(500).send({ message: 'Server error', error });
         }
-      });
-      
+    });
+    
+    
 
       app.delete('/myVisaApplications/:id',async(req,res)=>{
         const id = req.params.id;
@@ -117,7 +118,7 @@ async function run() {
             return res.status(400).send({ message: 'Email not provided' });
           }
       
-          const result = await visaCollection.find({authUserEmail: email }).toArray();
+          const result = await visaCollection.find({authUserEmail: email }).sort({ _id: -1 }).toArray();
           
           if (!result || result.length === 0) {
             return res.status(404).send({ message: 'No visa data found' });
